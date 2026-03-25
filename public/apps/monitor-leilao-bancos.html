@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monitor de Leilões Bancários</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f2f4f8;
+        --card: #ffffff;
+        --primary: #1144cc;
+        --text: #1f2937;
+        --muted: #6b7280;
+        --border: #d1d5db;
+        --success: #047857;
+      }
+
+      * {
+        box-sizing: border-box;
+        font-family: Inter, Arial, sans-serif;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      .container {
+        max-width: 1180px;
+        margin: 24px auto;
+        padding: 0 16px;
+      }
+
+      h1 {
+        margin: 0 0 12px;
+      }
+
+      .subtitle {
+        color: var(--muted);
+        margin-bottom: 16px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 16px;
+      }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px;
+      }
+
+      .card h2 {
+        margin-top: 0;
+        font-size: 1.1rem;
+      }
+
+      label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+
+      input,
+      select,
+      textarea,
+      button {
+        width: 100%;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 12px;
+        margin-bottom: 10px;
+        font-size: 0.95rem;
+      }
+
+      button {
+        background: var(--primary);
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+      }
+
+      button.secondary {
+        background: #111827;
+      }
+
+      button.ghost {
+        background: #fff;
+        border: 1px solid var(--border);
+        color: var(--text);
+      }
+
+      .inline {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .list {
+        max-height: 210px;
+        overflow: auto;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 8px;
+      }
+
+      .list label {
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 5px;
+      }
+
+      .list input[type='checkbox'] {
+        width: auto;
+        margin: 0;
+      }
+
+      .chip {
+        display: inline-block;
+        background: #dbeafe;
+        color: #1e3a8a;
+        border-radius: 999px;
+        padding: 4px 10px;
+        margin: 4px 6px 0 0;
+        font-size: 0.8rem;
+      }
+
+      .recipient-item {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px;
+        margin-bottom: 10px;
+      }
+
+      .recipient-item h4 {
+        margin: 0 0 6px;
+      }
+
+      .recipient-meta {
+        color: var(--muted);
+        font-size: 0.88rem;
+        margin-bottom: 8px;
+      }
+
+      .actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .status {
+        font-size: 0.85rem;
+        color: var(--success);
+      }
+
+      pre {
+        white-space: pre-wrap;
+        word-break: break-word;
+        background: #0f172a;
+        color: #f9fafb;
+        border-radius: 8px;
+        padding: 12px;
+        min-height: 160px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Monitor de Imóveis em Leilão (Bancos)</h1>
+      <div class="subtitle">
+        Configure o envio diário, cadastre destinatários e selecione as cidades para cada pessoa. Cidades são carregadas da API
+        oficial do IBGE.
+      </div>
+
+      <div class="grid">
+        <section class="card">
+          <h2>1) Configuração Geral</h2>
+          <label for="senderEmail">E-mail remetente dos relatórios</label>
+          <input id="senderEmail" type="email" placeholder="relatorios@seu-dominio.com" />
+
+          <label for="scheduleTime">Horário diário de execução</label>
+          <input id="scheduleTime" type="time" value="08:00" />
+
+          <label for="webhookUrl">Webhook para envio (opcional)</label>
+          <input id="webhookUrl" type="url" placeholder="https://seu-endpoint.com/enviar-relatorio" />
+
+          <label>Bancos monitorados</label>
+          <div id="banksList" class="list"></div>
+
+          <button id="saveConfigBtn">Salvar configuração</button>
+          <button id="runNowBtn" class="secondary">Executar monitoramento agora</button>
+          <div id="schedulerStatus" class="status"></div>
+        </section>
+
+        <section class="card">
+          <h2>2) Cadastro de Destinatários</h2>
+          <label for="recipientName">Nome</label>
+          <input id="recipientName" type="text" placeholder="Nome da pessoa" />
+
+          <label for="recipientEmail">E-mail</label>
+          <input id="recipientEmail" type="email" placeholder="destinatario@email.com" />
+
+          <label for="citySearch">Buscar cidade</label>
+          <input id="citySearch" type="text" placeholder="Digite para filtrar cidades" />
+
+          <div id="citiesList" class="list"></div>
+
+          <button id="addRecipientBtn">Adicionar destinatário</button>
+          <div id="selectedCitiesPreview"></div>
+        </section>
+
+        <section class="card">
+          <h2>3) Destinatários Cadastrados</h2>
+          <div id="recipientsContainer"></div>
+        </section>
+
+        <section class="card">
+          <h2>4) Log de Execução</h2>
+          <pre id="executionLog">Aguardando execução...</pre>
+        </section>
+      </div>
+    </div>
+
+    <script src="/js/monitor-leilao-bancos.js"></script>
+  </body>
+</html>
