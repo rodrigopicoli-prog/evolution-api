@@ -1,0 +1,37 @@
+:root {
+  font-family: Inter, system-ui, sans-serif;
+  color: #e5e7eb;
+  background: #0f172a;
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  background: #111827;
+  position: sticky;
+  top: 0;
+}
+.header nav { display: flex; flex-wrap: wrap; gap: .6rem; }
+.header a { color: #dbeafe; text-decoration: none; }
+.brand { font-weight: 700; }
+.container { max-width: 960px; margin: 0 auto; padding: 1rem; }
+.form, .card {
+  background: #1f2937;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+.form { display: grid; gap: .6rem; }
+input, textarea, button {
+  padding: .7rem;
+  border-radius: 8px;
+  border: 1px solid #374151;
+}
+button { background: #2563eb; color: white; cursor: pointer; border: none; }
+.list { display: grid; gap: .8rem; }
+.grid-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+.row { display: flex; justify-content: space-between; align-items: center; }

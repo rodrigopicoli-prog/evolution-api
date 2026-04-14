@@ -1,0 +1,51 @@
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  email VARCHAR(160) NOT NULL UNIQUE,
+  phone VARCHAR(40),
+  password_hash VARCHAR(255) NOT NULL,
+  city VARCHAR(120),
+  state VARCHAR(2),
+  profile_type VARCHAR(20) NOT NULL DEFAULT 'user',
+  avatar_url TEXT,
+  bio TEXT,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS events (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(180) NOT NULL,
+  description TEXT NOT NULL,
+  start_date TIMESTAMP NOT NULL,
+  end_date TIMESTAMP,
+  city VARCHAR(120) NOT NULL,
+  state VARCHAR(2) NOT NULL,
+  place_name VARCHAR(180) NOT NULL,
+  cover_url TEXT,
+  category VARCHAR(80),
+  status VARCHAR(20) NOT NULL DEFAULT 'pending',
+  created_by INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS bands (
+  id SERIAL PRIMARY KEY,
+  owner_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  stage_name VARCHAR(180) NOT NULL,
+  description TEXT NOT NULL,
+  city VARCHAR(120) NOT NULL,
+  state VARCHAR(2) NOT NULL,
+  whatsapp VARCHAR(40),
+  instagram VARCHAR(120),
+  photo_url TEXT,
+  status VARCHAR(20) NOT NULL DEFAULT 'pending',
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS favorites (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  UNIQUE(user_id, event_id)
+);
