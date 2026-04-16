@@ -1,0 +1,136 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String           @id @default(uuid())
+  email           String           @unique
+  name            String
+  passwordHash    String
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  emailAccounts   EmailAccount[]
+  emails          Email[]
+  automationRules AutomationRule[]
+  auditLogs       AuditLog[]
+}
+
+model EmailAccount {
+  id                String   @id @default(uuid())
+  userId            String
+  name              String
+  email             String
+  imapHost          String
+  imapPort          Int
+  smtpHost          String
+  smtpPort          Int
+  username          String
+  passwordEncrypted String
+  useTls            Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emails            Email[]
+
+  @@index([userId])
+}
+
+model Folder {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  systemKey String?
+  createdAt DateTime @default(now())
+  emails    Email[]
+
+  @@index([userId])
+}
+
+model Email {
+  id             String       @id @default(uuid())
+  externalId     String
+  userId         String
+  emailAccountId String
+  folderId       String?
+  subject        String
+  fromAddress    String
+  toAddress      String
+  textBody       String
+  htmlBody       String?
+  isRead         Boolean      @default(false)
+  isArchived     Boolean      @default(false)
+  isDeleted      Boolean      @default(false)
+  isFavorite     Boolean      @default(false)
+  aiCategory     String?
+  aiPriority     String?
+  aiSummary      String?
+  aiAction       String?
+  aiSuggestedReply String?
+  receivedAt     DateTime
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emailAccount   EmailAccount @relation(fields: [emailAccountId], references: [id], onDelete: Cascade)
+  folder         Folder?      @relation(fields: [folderId], references: [id])
+  attachments    Attachment[]
+  aiLogs         AILog[]
+
+  @@unique([externalId, emailAccountId])
+  @@index([userId, receivedAt])
+  @@index([aiCategory])
+}
+
+model Attachment {
+  id        String   @id @default(uuid())
+  emailId   String
+  fileName  String
+  mimeType  String
+  size      Int
+  storageKey String
+  createdAt DateTime @default(now())
+  email     Email    @relation(fields: [emailId], references: [id], onDelete: Cascade)
+
+  @@index([emailId])
+}
+
+model AILog {
+  id        String   @id @default(uuid())
+  emailId   String
+  model     String
+  prompt    String
+  response  String
+  createdAt DateTime @default(now())
+  email     Email    @relation(fields: [emailId], references: [id], onDelete: Cascade)
+
+  @@index([emailId, createdAt])
+}
+
+model AutomationRule {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  condition String
+  action    String
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String
+  action    String
+  metadata  String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
